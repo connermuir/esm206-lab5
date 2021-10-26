@@ -78,3 +78,47 @@ This means we would most likely reject the null hypothesis that these samples we
 
 ## Example 2
 
+Uging the `mpg` dataset to compare the city gas mileage for SUVs and compact cars.
+
+```{r}
+compact_suv <- mpg %>% 
+  filter(class %in% c("compact", "suv"))
+
+```
+
+```{r}
+ggplot(data = compact_suv, aes(x = cty)) +
+  geom_histogram(bins = 12, aes(fill = class)) +
+  facet_wrap(~ class)
+
+ggplot(data = compact_suv, aes(sample = cty)) +
+  geom_qq(aes(color = class)) +
+  facet_wrap(~ class)
+```
+
+
+```{r}
+car_stats <- compact_suv %>% 
+  group_by(class) %>% 
+  summarize(mean_city = mean(cty),
+            sd_city = sd(cty),
+            sample_size = n())
+
+car_stats
+```
+
+```{r}
+compact_sample <- compact_suv %>% 
+  filter(class == "compact") %>% 
+  pull(cty)
+
+suv_sample <- compact_suv %>% 
+  filter(class == "suv") %>% 
+  pull(cty)
+
+cars_t <- t.test(compact_sample, suv_sample)
+```
+
+This means we would most likely reject the null hypothesis that these samples were drawn from population with the same mean when operating with a 95% confidence interval. 
+
+Mean gas mileage for compact cars and SUVs differs significantly (t(`r cars_t$parameter`) = `r cars_t$statistic`, p < 0.001, $\alpha$ = 0.05).
